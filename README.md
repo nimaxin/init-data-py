@@ -5,8 +5,6 @@
 
 A Python library that provides tools for using and validating Telegram web app init data.
 
----
-
 ## Installation
 
 You can install the library using pip.
