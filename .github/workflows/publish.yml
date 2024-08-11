@@ -1,0 +1,41 @@
+name: Publish Python Package to PyPI
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/init-data-py
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Search and replace version
+        run: |
+          VERSION="${TAG_NAME//v/}"
+          sed -i "s/1\.0+versionplaceholder\.1/$VERSION/" pyproject.toml
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+
+      - uses: eifinger/setup-rye@v4
+        with:
+          enable-cache: true
+
+      - name: Build
+        run: |
+          rye build
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
