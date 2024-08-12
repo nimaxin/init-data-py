@@ -24,9 +24,10 @@ class TestSignInitData(unittest.TestCase):
         )
 
     def test_sign(self):
-        self.init_data.sign(
+        init_data = self.init_data.sign(
             bot_token=self.bot_token,
             auth_date=self.expected_auth_date,
         )
         self.assertEqual(self.init_data.hash, self.expected_hash)
         self.assertEqual(self.init_data.auth_date, self.expected_auth_date)
+        self.assertIsInstance(init_data, InitData)
