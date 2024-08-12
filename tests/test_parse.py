@@ -21,9 +21,9 @@ class TestParseInitData(unittest.TestCase):
         )
 
     def test_valid_query_string(self):
-        init_data = InitData.from_query_string(self.query_string)
+        init_data = InitData.parse(self.query_string)
         self.assertEqual(init_data, self.expected_init_data)
 
     def test_invalid_query_string(self):
         with self.assertRaises(errors.UnexpectedFormatError):
-            InitData.from_query_string(self.query_string.upper())
+            InitData.parse(self.query_string.upper())

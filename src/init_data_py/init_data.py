@@ -3,6 +3,7 @@ import hmac
 import json
 import time
 import urllib.parse
+import warnings
 from datetime import datetime, timedelta
 from typing import Literal, Optional
 
@@ -71,7 +72,12 @@ class InitData:
         self.auth_date = auth_date
         self.hash = hash
 
-    def validate(self, bot_token: str, lifetime: Optional[int] = None):
+    def validate(
+        self,
+        bot_token: str,
+        lifetime: Optional[int] = None,
+        raise_error: bool = True,
+    ):
         """Validates the init data authenticity.
 
         Parameters:
@@ -82,9 +88,12 @@ class InitData:
                 The maximum validity period of the init data in seconds.
                 Recommended for security. Default is `None`.
 
+            raise_error (`bool`, optional):
+                In case True, raises an exception on invalid data, If False, returns False instead of raising an error.
+
         Returns:
             `bool`:
-                `True` if the init data is valid; otherwise, raises an exception.
+                True if the data is valid; otherwise, returns False.
 
         Raises:
             `errors.SignMissingError`: In case the signature (hash) is missing.
@@ -93,19 +102,27 @@ class InitData:
             `errors.SignInvalidError`: In case the signature (hash) is invalid.
         """
         if self.hash is None:
-            raise errors.SignMissingError()
+            if raise_error:
+                raise errors.SignMissingError()
+            return False
 
         if self.auth_date is None:
-            raise errors.AuthDateMissingError()
+            if raise_error:
+                raise errors.AuthDateMissingError()
+            return False
 
         if lifetime is not None:
             auth_date = datetime.fromtimestamp(self.auth_date)
             expire_date = auth_date - timedelta(seconds=lifetime)
             if datetime.now() > expire_date:
-                raise errors.ExpiredError()
+                if raise_error:
+                    raise errors.ExpiredError()
+                return False
 
         if self.hash != self.calculate_hash(bot_token):
-            raise errors.SignInvalidError()
+            if raise_error:
+                raise errors.SignInvalidError()
+            return False
 
         return True
 
@@ -120,13 +137,15 @@ class InitData:
                 The timestamp (without timezone) representing the authorization date. If not provided, the current timestamp will be used.
 
         Returns:
-            `None`:
-                This method updates the current init data by setting the `auth_date` and generated signature (`hash`) attributes.
+            `InitData`:
+                This current updated init data by setting the `auth_date` and generated signature (`hash`) attributes.
         """
         if auth_date is None:
             self.auth_date = int(time.time())
         self.auth_date = auth_date
         self.hash = self.calculate_hash(bot_token)
+
+        return self
 
     def calculate_hash(
         self,
@@ -151,17 +170,32 @@ class InitData:
         secret_key = hmac.new(
             b"WebAppData", bot_token.encode(), hashlib.sha256
         ).digest()
+
         return hmac.new(
             secret_key, data_check_string, hashlib.sha256
         ).hexdigest()
 
     @classmethod
     def from_query_string(cls, query_string: str):
+        warnings.warn(
+            "The 'from_query_string' method is deprecated and will be removed in near stable version. Use 'parse' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        return cls.parse(query_string)
+
+    @classmethod
+    def parse(cls, query_string: str):
         """Create an InitData object from a query string.
 
         Parameters:
             query_string (`str`):
-                The query string from `window.WebApp.initData` to parse and covert into an WebAppInitData object.
+                The query string from `window.WebApp.initData` to parse and convert into an InitData object.
+
+        Returns:
+            `InitData`:
+                An object of InitData with attributes set according to the values in the query_string.
 
         Raises:
             `errors.SignMissingError`: In case the signature (hash) is missing.
@@ -242,6 +276,7 @@ class InitData:
     def to_query_string(self):
         """Returns a query string representation of the object."""
         init_data = self.to_dict(nested=False)
+
         return urllib.parse.urlencode(init_data)
 
     def __str__(self) -> str:
