@@ -21,6 +21,14 @@ class TestValidateInitData(unittest.TestCase):
         )
         self.bot_token = "7244657541:AAEgqk0HDC3WD5cdbnGMdd6L0TJ74FDp97Y"
 
+        self.utf8_qs = "query_id=AAF2GVE4AwAAAHYZUTgHczdc&user=%7B%22id%22%3A7387289974%2C%22first_name%22%3A%22%D0%90%D1%80%D1%82%D1%91%D0%BC%22%2C%22last_name%22%3A%22%D0%9E%D0%BD%D1%83%D1%84%D1%80%D0%B8%D0%B9%22%2C%22username%22%3A%22typexin%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1724048856&hash=53b22bc70a748dae613a5aa91890b387b9cc0356c5dcffca173816b6e40a17e5"
+
+    def test_utf8_support(self):
+        query_string = "query_id=AAF2GVE4AwAAAHYZUTgHczdc&user=%7B%22id%22%3A7387289974%2C%22first_name%22%3A%22%D0%90%D1%80%D1%82%D1%91%D0%BC%22%2C%22last_name%22%3A%22%D0%9E%D0%BD%D1%83%D1%84%D1%80%D0%B8%D0%B9%22%2C%22username%22%3A%22typexin%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1724048856&hash=53b22bc70a748dae613a5aa91890b387b9cc0356c5dcffca173816b6e40a17e5"
+        bot_token = "7244657541:AAHAJP25XehV6N02kiLLAEi2el-xLsSw29w"
+        init_data = InitData.parse(query_string)
+        self.assertTrue(init_data.validate(bot_token))
+
     def test_valid_init_data(self):
         self.assertTrue(self.init_data.validate(self.bot_token))
 

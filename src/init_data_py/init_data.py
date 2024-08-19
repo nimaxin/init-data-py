@@ -246,7 +246,7 @@ class InitData:
 
     def to_json(self):
         """Returns a JSON serialized representation of the object."""
-        return json.dumps(self.to_dict(nested=True))
+        return json.dumps(self.to_dict(nested=True), ensure_ascii=False)
 
     def to_dict(self, nested=True):
         """Returns a dictionary representation of the object.

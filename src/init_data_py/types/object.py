@@ -4,7 +4,9 @@ import json
 class Object:
     def to_json(self):
         """Returns a JSON serialized representation of the object."""
-        return json.dumps(self.to_dict(), separators=(",", ":"))
+        return json.dumps(
+            self.to_dict(), separators=(",", ":"), ensure_ascii=False
+        )
 
     def to_dict(self):
         """Returns a dictionary representation of the object."""
