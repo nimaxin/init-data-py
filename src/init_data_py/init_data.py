@@ -113,7 +113,7 @@ class InitData:
 
         if lifetime is not None:
             auth_date = datetime.fromtimestamp(self.auth_date)
-            expire_date = auth_date - timedelta(seconds=lifetime)
+            expire_date = auth_date + timedelta(seconds=lifetime)
             if datetime.now() > expire_date:
                 if raise_error:
                     raise errors.ExpiredError()
