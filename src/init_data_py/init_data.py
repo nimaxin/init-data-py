@@ -140,9 +140,7 @@ class InitData:
             `InitData`:
                 This current updated init data by setting the `auth_date` and generated signature (`hash`) attributes.
         """
-        if auth_date is None:
-            self.auth_date = int(time.time())
-        self.auth_date = auth_date
+        self.auth_date = auth_date if auth_date is not None else int(time.time())
         self.hash = self.calculate_hash(bot_token)
 
         return self
