@@ -29,6 +29,12 @@ class TestValidateInitData(unittest.TestCase):
         init_data = InitData.parse(query_string)
         self.assertTrue(init_data.validate(bot_token))
 
+    def test_escape_character(self):
+        query_string = "query_id=AAF03wc0AgAAAHTfBzTtHPDB&user=%7B%22id%22%3A5167898484%2C%22first_name%22%3A%22xin%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22pvnimaxin%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FYpcdHFmoxukmQ537mOZhe-Woot_k2xrmbdAIrGK1zFgIVth6Wzacz7P2nGNCcp9j.svg%22%7D&auth_date=1731441609&hash=f4bac82fe8f20abdc03126af489751752e830227b58241ec2f9dd67913909ee0"
+        bot_token = "7244657541:AAFMjYH4kc3U9zG0GWnxYfW-QKICVzDwvEw"
+        init_data = InitData.parse(query_string)
+        self.assertTrue(init_data.validate(bot_token))
+
     def test_valid_init_data(self):
         self.assertTrue(self.init_data.validate(self.bot_token))
 

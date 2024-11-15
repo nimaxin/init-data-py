@@ -140,7 +140,9 @@ class InitData:
             `InitData`:
                 This current updated init data by setting the `auth_date` and generated signature (`hash`) attributes.
         """
-        self.auth_date = auth_date if auth_date is not None else int(time.time())
+        self.auth_date = (
+            auth_date if auth_date is not None else int(time.time())
+        )
         self.hash = self.calculate_hash(bot_token)
 
         return self
@@ -162,9 +164,11 @@ class InitData:
         init_data = self.to_dict(nested=False)
         init_data.pop("hash", None)
         sorted_attrs = sorted(init_data.items())
-        data_check_string = "\n".join(
-            f"{k}={v}" for k, v in sorted_attrs
-        ).encode()
+        data_check_string = (
+            "\n".join(f"{k}={v}" for k, v in sorted_attrs)
+            .replace("/", "\/")
+            .encode()
+        )
         secret_key = hmac.new(
             b"WebAppData", bot_token.encode(), hashlib.sha256
         ).digest()
