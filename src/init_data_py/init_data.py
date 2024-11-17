@@ -60,6 +60,7 @@ class InitData:
         can_send_after: Optional[int] = None,
         auth_date: Optional[int] = None,
         hash: Optional[str] = None,
+        signature: Optional[str] = None,
     ) -> None:
         self.query_id = query_id
         self.user = user
@@ -71,6 +72,7 @@ class InitData:
         self.can_send_after = can_send_after
         self.auth_date = auth_date
         self.hash = hash
+        self.signature = signature
 
     def validate(
         self,
@@ -214,6 +216,7 @@ class InitData:
         for k, v in parsed_qs.items():
             if k in {
                 "hash",
+                "signature",
                 "query_id",
                 "chat_type",
                 "chat_instance",
