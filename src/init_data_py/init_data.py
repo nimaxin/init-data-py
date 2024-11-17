@@ -43,6 +43,9 @@ class InitData:
 
         hash (`str`, optional):
             A hash of all passed parameters, which the bot server can use to check their validity.
+
+        signature (`str`, optional):
+            A signature of all passed parameters (except hash), which the third party can use to check their validity.
     """
 
     def __init__(
