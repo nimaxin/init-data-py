@@ -1,11 +1,13 @@
 [project]
 name = "init-data-py"
-version = "0.2.6"
+version = "1.0.0"
 description = "A Python library that provides tools for using and validating Telegram web app init data."
 authors = [
     { name = "nimaxin", email = "nimaxin@proton.me" }
 ]
-dependencies = []
+dependencies = [
+    "cryptography>=43.0.3",
+]
 readme = "README.md"
 requires-python = ">= 3.8"
 license = "MIT"
@@ -20,6 +22,7 @@ dev-dependencies = [
     "mypy>=1.11.1",
     "tox>=4.17.1",
     "ruff>=0.5.7",
+    "pytest>=8.3.3",
 ]
 
 [tool.hatch.metadata]
@@ -29,49 +32,7 @@ allow-direct-references = true
 packages = ["src/init_data_py"]
 
 [tool.rye.scripts]
-tests = "python -m unittest discover --verbose"
-
-[tool.ruff]
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".ipynb_checkpoints",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pyenv",
-    ".pytest_cache",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    ".vscode",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "site-packages",
-    "venv",
-]
-
-# Same as Black.
-line-length = 79
-indent-width = 4
-
-
-[tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I001"]
-fixable = ["ALL"]
-
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+tests = "pytest"
 
 [tool.ruff.format]
 quote-style = "double"
-indent-style = "space"

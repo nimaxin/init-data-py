@@ -1,13 +1,11 @@
-# python generated files
 __pycache__/
 *.py[oc]
 build/
 dist/
 wheels/
 *.egg-info
-
-# venv
 .venv
-
+.tox
 .mypy_cache
 .ruff_cache
+.pytest_cache
