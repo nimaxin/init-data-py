@@ -171,7 +171,7 @@ class InitData:
         sorted_attrs = sorted(init_data.items())
         data_check_string = (
             "\n".join(f"{k}={v}" for k, v in sorted_attrs)
-            .replace("/", "\/")
+            .replace("/", r"\/")
             .encode()
         )
         secret_key = hmac.new(
