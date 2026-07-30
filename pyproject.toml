@@ -14,11 +14,9 @@ license = "MIT"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.rye]
-managed = true
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "mypy>=1.11.1",
-    "tox>=4.17.1",
     "ruff>=0.5.7",
 ]
 
@@ -27,9 +25,6 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/init_data_py"]
-
-[tool.rye.scripts]
-tests = "python -m unittest discover --verbose"
 
 [tool.ruff]
 exclude = [
