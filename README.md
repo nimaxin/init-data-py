@@ -71,6 +71,24 @@ is_valid = init_data.validate(
 )
 ```
 
+## Development
+
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management and packaging. After installing uv, set up the environment:
+
+```bash
+uv sync
+```
+
+Then use the following commands:
+
+```bash
+uv run python -m unittest discover --verbose   # run the tests
+uv run ruff check .                            # lint
+uv run ruff format .                           # format
+uv run mypy src                                # type check
+uv build                                       # build the distributions
+```
+
 ## License
 
 This library is licensed under the [MIT License](LICENCE).
