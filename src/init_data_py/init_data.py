@@ -119,9 +119,14 @@ class InitData:
         if lifetime is not None:
             auth_date = datetime.fromtimestamp(self.auth_date)
             expire_date = auth_date + timedelta(seconds=lifetime)
-            if datetime.now() > expire_date:
+            now = datetime.now()
+            if now > expire_date:
                 if raise_error:
-                    raise errors.ExpiredError()
+                    raise errors.ExpiredError(
+                        issued_at=auth_date,
+                        expires_at=expire_date,
+                        now=now,
+                    )
                 return False
 
         if self.hash != self.calculate_hash(bot_token):

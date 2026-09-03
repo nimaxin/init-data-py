@@ -116,7 +116,6 @@ warn_unreachable = true
 [[tool.mypy.overrides]]
 module = [
     "init_data_py.init_data",
-    "init_data_py.errors.*",
     "init_data_py.types.*",
 ]
 disallow_untyped_defs = false
