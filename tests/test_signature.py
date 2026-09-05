@@ -176,3 +176,44 @@ class TestMissingExtra(unittest.TestCase):
             ),
             ImportError,
         )
+
+
+@unittest.skipUnless(is_ed25519_available(), "requires the ed25519 extra")
+class TestRealTelegramSignature(unittest.TestCase):
+    """Init data captured from Telegram, checked against its own key.
+
+    Everything else in this file signs with a key we generated, which
+    only proves the code agrees with itself. This is the one case that
+    proves it agrees with Telegram.
+    """
+
+    def test_validates_against_the_production_key(self):
+        for vector in vectors.SIGNED_ALL:
+            with self.subTest(auth_date=vector.auth_date):
+                init_data = validate_by_signature(
+                    vector.query_string, vector.bot_id, expires_in=0
+                )
+                self.assertIsNotNone(init_data.signature)
+
+    def test_rejected_by_the_test_environment_key(self):
+        for vector in vectors.SIGNED_ALL:
+            with self.subTest(auth_date=vector.auth_date):
+                self.assertFalse(
+                    is_valid_by_signature(
+                        vector.query_string,
+                        vector.bot_id,
+                        environment="test",
+                        expires_in=0,
+                    )
+                )
+
+    def test_rejected_for_another_bot(self):
+        for vector in vectors.SIGNED_ALL:
+            with self.subTest(auth_date=vector.auth_date):
+                self.assertFalse(
+                    is_valid_by_signature(
+                        vector.query_string,
+                        vector.bot_id + 1,
+                        expires_in=0,
+                    )
+                )

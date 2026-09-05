@@ -8,6 +8,9 @@ class Vector(NamedTuple):
     query_string: str
     bot_token: str
     auth_date: int
+    #: Set when the payload carries a signature, so it can also be checked
+    #: against Telegram's public key.
+    bot_id: int | None = None
 
     @property
     def issued_at(self) -> datetime:
@@ -56,4 +59,28 @@ ESCAPED_SLASH = Vector(
     auth_date=1731441609,
 )
 
-ALL = (PLAIN, UTF8, ESCAPED_SLASH)
+#: Captured from a current client, so it carries a signature as well as a
+#: hash. Both must validate: signature takes part in the hash, and is left
+#: out only when checking the signature itself. The photo_url here also
+#: arrives with escaped slashes.
+SIGNED = Vector(
+    query_string=(
+        "user=%7B%22id%22%3A5167898484%2C%22first_name%22%3A%22xin%22%2C%22"
+        "last_name%22%3A%22%22%2C%22username%22%3A%22pvnimaxin%22%2C%22"
+        "language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22"
+        "photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F"
+        "320%5C%2FYpcdHFmoxukmQ537mOZhe-Woot_k2xrmbdAIrGK1zFgIVth6Wzacz7P2nGN"
+        "Ccp9j.svg%22%7D&chat_instance=8207002646956202621&chat_type=private"
+        "&auth_date=1788639560&signature=5TpQXmcWfc12P3GMFaHQzBri6FNu6QWrkH4y"
+        "sQX3CuT0Jdh3LhOEjd0jvso0fnOa_YCpJXZiid-DpZXidvVPAQ&hash=2c450512f189"
+        "adbf7e7027e5f32fd7954c00fb21218265320b9a6b9c2139891f"
+    ),
+    bot_token="7082182952:AAFN9rxuCROAv-lBtSXSSaR3ZMQsP0KW95I",
+    auth_date=1788639560,
+    bot_id=7082182952,
+)
+
+ALL = (PLAIN, UTF8, ESCAPED_SLASH, SIGNED)
+
+#: The subset that can be checked against Telegram's public key.
+SIGNED_ALL = tuple(vector for vector in ALL if vector.bot_id is not None)

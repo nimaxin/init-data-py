@@ -110,3 +110,31 @@ class TestValidateByHash(unittest.TestCase):
             is_valid_by_hash(
                 vector.query_string, vector.bot_token, expires_in=-1
             )
+
+
+class TestSignatureTakesPartInTheHash(unittest.TestCase):
+    """A signature field must be hashed, not skipped.
+
+    Only hash is left out of the data-check-string. Dropping signature
+    too would break every current client, and the mistake is invisible
+    against older captures that have no signature at all.
+    """
+
+    def test_real_signed_init_data_validates_by_hash(self):
+        for vector in vectors.SIGNED_ALL:
+            with self.subTest(auth_date=vector.auth_date):
+                init_data = validate_by_hash(
+                    vector.query_string, vector.bot_token, expires_in=0
+                )
+                self.assertIsNotNone(init_data.signature)
+
+    def test_dropping_the_signature_changes_the_hash(self):
+        vector = vectors.SIGNED_ALL[0]
+        without = "&".join(
+            part
+            for part in vector.query_string.split("&")
+            if not part.startswith("signature=")
+        )
+        self.assertFalse(
+            is_valid_by_hash(without, vector.bot_token, expires_in=0)
+        )
