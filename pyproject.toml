@@ -110,13 +110,3 @@ indent-style = "space"
 files = ["src"]
 strict = true
 warn_unreachable = true
-
-# Legacy 0.2.x modules; delete each entry as its module is replaced.
-[[tool.mypy.overrides]]
-module = [
-    "init_data_py.init_data",
-    "init_data_py.types.*",
-]
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-disallow_untyped_calls = false

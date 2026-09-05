@@ -1,60 +1,112 @@
-import time
 import unittest
+from datetime import timedelta
 
-from init_data_py import InitData, errors, types
+from init_data_py import errors, is_valid_by_hash, parse, validate_by_hash
+from tests import vectors
 
 
-class TestValidateInitData(unittest.TestCase):
-    def setUp(self) -> None:
-        self.init_data = InitData(
-            query_id="AAF03wc0AgAAAHTfBzROOCVW",
-            user=types.User(
-                id=5167898484,
-                first_name="xin",
-                last_name="",
-                username="pvnimaxin",
-                language_code="en",
-                allows_write_to_pm=True,
+class TestValidateByHash(unittest.TestCase):
+    def test_accepts_real_init_data(self):
+        for vector in vectors.ALL:
+            with self.subTest(auth_date=vector.auth_date):
+                init_data = validate_by_hash(
+                    vector.query_string, vector.bot_token, now=vector.issued_at
+                )
+                self.assertEqual(
+                    init_data.to_query_string(), vector.query_string
+                )
+
+    def test_accepts_an_already_parsed_object(self):
+        vector = vectors.PLAIN
+        init_data = parse(vector.query_string)
+        self.assertIs(
+            validate_by_hash(
+                init_data, vector.bot_token, now=vector.issued_at
             ),
-            auth_date=1722938610,
-            hash="8654c8c617c143abf656f4f159be2539880a56f58c2d9be622f90c0346aa162b",
+            init_data,
         )
-        self.bot_token = "7244657541:AAEgqk0HDC3WD5cdbnGMdd6L0TJ74FDp97Y"
 
-        self.utf8_qs = "query_id=AAF2GVE4AwAAAHYZUTgHczdc&user=%7B%22id%22%3A7387289974%2C%22first_name%22%3A%22%D0%90%D1%80%D1%82%D1%91%D0%BC%22%2C%22last_name%22%3A%22%D0%9E%D0%BD%D1%83%D1%84%D1%80%D0%B8%D0%B9%22%2C%22username%22%3A%22typexin%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1724048856&hash=53b22bc70a748dae613a5aa91890b387b9cc0356c5dcffca173816b6e40a17e5"
+    def test_rejects_a_tampered_hash(self):
+        vector = vectors.PLAIN
+        tampered = vector.query_string[:-1] + (
+            "c" if vector.query_string[-1] != "c" else "d"
+        )
+        with self.assertRaises(errors.HashInvalidError):
+            validate_by_hash(tampered, vector.bot_token, now=vector.issued_at)
 
-    def test_utf8_support(self):
-        query_string = "query_id=AAF2GVE4AwAAAHYZUTgHczdc&user=%7B%22id%22%3A7387289974%2C%22first_name%22%3A%22%D0%90%D1%80%D1%82%D1%91%D0%BC%22%2C%22last_name%22%3A%22%D0%9E%D0%BD%D1%83%D1%84%D1%80%D0%B8%D0%B9%22%2C%22username%22%3A%22typexin%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1724048856&hash=53b22bc70a748dae613a5aa91890b387b9cc0356c5dcffca173816b6e40a17e5"
-        bot_token = "7244657541:AAHAJP25XehV6N02kiLLAEi2el-xLsSw29w"
-        init_data = InitData.parse(query_string)
-        self.assertTrue(init_data.validate(bot_token))
+    def test_rejects_the_wrong_token(self):
+        vector = vectors.PLAIN
+        with self.assertRaises(errors.HashInvalidError):
+            validate_by_hash(
+                vector.query_string, "1:WRONG", now=vector.issued_at
+            )
 
-    def test_escape_character(self):
-        query_string = "query_id=AAF03wc0AgAAAHTfBzTtHPDB&user=%7B%22id%22%3A5167898484%2C%22first_name%22%3A%22xin%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22pvnimaxin%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FYpcdHFmoxukmQ537mOZhe-Woot_k2xrmbdAIrGK1zFgIVth6Wzacz7P2nGNCcp9j.svg%22%7D&auth_date=1731441609&hash=f4bac82fe8f20abdc03126af489751752e830227b58241ec2f9dd67913909ee0"
-        bot_token = "7244657541:AAFMjYH4kc3U9zG0GWnxYfW-QKICVzDwvEw"
-        init_data = InitData.parse(query_string)
-        self.assertTrue(init_data.validate(bot_token))
+    def test_expiry_is_on_by_default(self):
+        vector = vectors.PLAIN
+        self.assertFalse(
+            is_valid_by_hash(vector.query_string, vector.bot_token)
+        )
 
-    def test_valid_init_data(self):
-        self.assertTrue(self.init_data.validate(self.bot_token))
+    def test_expiry_boundaries(self):
+        vector = vectors.PLAIN
+        cases = [
+            (timedelta(hours=1), True),
+            (timedelta(seconds=86400), True),
+            (timedelta(seconds=86401), False),
+        ]
+        for offset, expected in cases:
+            with self.subTest(offset=offset):
+                self.assertEqual(
+                    is_valid_by_hash(
+                        vector.query_string,
+                        vector.bot_token,
+                        now=vector.issued_at + offset,
+                    ),
+                    expected,
+                )
 
-    def test_invalid_init_data(self):
-        self.init_data.hash = "invalid hash"
-        with self.assertRaises(errors.SignInvalidError):
-            self.init_data.validate(self.bot_token)
+    def test_expiry_can_be_switched_off(self):
+        vector = vectors.PLAIN
+        for expires_in in (0, None):
+            with self.subTest(expires_in=expires_in):
+                self.assertTrue(
+                    is_valid_by_hash(
+                        vector.query_string,
+                        vector.bot_token,
+                        expires_in=expires_in,
+                    )
+                )
 
-    def test_sign_missing_init_data(self):
-        self.init_data.hash = None
-        with self.assertRaises(errors.SignMissingError):
-            self.init_data.validate(self.bot_token)
+    def test_expiry_accepts_a_timedelta(self):
+        vector = vectors.PLAIN
+        self.assertTrue(
+            is_valid_by_hash(
+                vector.query_string,
+                vector.bot_token,
+                expires_in=timedelta(hours=2),
+                now=vector.issued_at + timedelta(hours=1),
+            )
+        )
 
-    def test_auth_date_missing_init_data(self):
-        self.init_data.auth_date = None
-        with self.assertRaises(errors.AuthDateMissingError):
-            self.init_data.validate(self.bot_token)
+    def test_expired_error_carries_the_times(self):
+        vector = vectors.PLAIN
+        now = vector.issued_at + timedelta(hours=30)
+        with self.assertRaises(errors.ExpiredError) as caught:
+            validate_by_hash(vector.query_string, vector.bot_token, now=now)
 
-    def test_expired_init_data(self):
-        lifetime = 10
-        self.init_data.auth_date = int(time.time()) - lifetime
-        with self.assertRaises(errors.ExpiredError):
-            self.init_data.validate(self.bot_token, lifetime)
+        error = caught.exception
+        self.assertEqual(error.issued_at, vector.issued_at)
+        self.assertEqual(error.now, now)
+        self.assertEqual(error.expired_for, timedelta(hours=6))
+
+    def test_is_valid_hides_rejections_but_not_mistakes(self):
+        vector = vectors.PLAIN
+        self.assertFalse(
+            is_valid_by_hash(
+                vector.query_string, "1:WRONG", now=vector.issued_at
+            )
+        )
+        with self.assertRaises(ValueError):
+            is_valid_by_hash(
+                vector.query_string, vector.bot_token, expires_in=-1
+            )
