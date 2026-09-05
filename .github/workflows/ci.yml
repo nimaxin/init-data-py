@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v4
@@ -26,8 +26,13 @@ jobs:
       - name: Install project
         run: uv sync --locked
 
-      - name: Run tests
+      # Run twice: the core must work with no dependencies at all, and the
+      # signature tests must run when the extra is present.
+      - name: Test without the ed25519 extra
         run: uv run python -m unittest discover --verbose
+
+      - name: Test with the ed25519 extra
+        run: uv run --extra ed25519 python -m unittest discover --verbose
 
   lint:
     name: Lint
@@ -48,3 +53,45 @@ jobs:
 
       - name: Ruff format check
         run: uv run ruff format --check .
+
+  types:
+    name: Type check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Install project with the ed25519 extra
+        run: uv sync --locked --extra ed25519
+
+      - name: Mypy
+        run: uv run --no-sync mypy
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Build distributions
+        run: uv build
+
+      - name: Check the wheel ships py.typed
+        run: |
+          python - <<'EOF'
+          import glob, zipfile
+
+          wheel = glob.glob("dist/*.whl")[0]
+          names = zipfile.ZipFile(wheel).namelist()
+          assert "init_data_py/py.typed" in names, names
+          print("py.typed present in", wheel)
+          EOF

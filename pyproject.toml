@@ -1,14 +1,50 @@
 [project]
 name = "init-data-py"
-version = "0.2.7"
-description = "A Python library that provides tools for using and validating Telegram web app init data."
+description = "A Python library that provides tools for using and validating Telegram Mini App init data."
 authors = [
     { name = "nimaxin", email = "nimaxin@proton.me" }
 ]
 dependencies = []
 readme = "README.md"
-requires-python = ">= 3.8"
+requires-python = ">= 3.10"
 license = "MIT"
+license-files = ["LICENCE"]
+keywords = [
+    "telegram",
+    "telegram-mini-app",
+    "telegram-web-app",
+    "init-data",
+    "webappinitdata",
+    "authentication",
+    "validation",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Internet",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+ed25519 = ["cryptography>=41.0"]
+
+[project.urls]
+Homepage = "https://github.com/nimaxin/init-data-py"
+Repository = "https://github.com/nimaxin/init-data-py"
+Issues = "https://github.com/nimaxin/init-data-py/issues"
+Changelog = "https://github.com/nimaxin/init-data-py/blob/master/CHANGELOG.md"
 
 [build-system]
 requires = ["hatchling"]
@@ -20,8 +56,8 @@ dev = [
     "ruff>=0.5.7",
 ]
 
-[tool.hatch.metadata]
-allow-direct-references = true
+[tool.hatch.version]
+path = "src/init_data_py/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/init_data_py"]
@@ -60,7 +96,6 @@ exclude = [
 line-length = 79
 indent-width = 4
 
-
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I001"]
 fixable = ["ALL"]
@@ -70,3 +105,14 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.mypy]
+files = ["src"]
+strict = true
+warn_unreachable = true
+
+# Only importable with the ed25519 extra; the real check runs in CI, where
+# the extra is installed.
+[[tool.mypy.overrides]]
+module = ["cryptography.*"]
+ignore_missing_imports = true
