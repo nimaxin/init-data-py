@@ -110,3 +110,9 @@ indent-style = "space"
 files = ["src"]
 strict = true
 warn_unreachable = true
+
+# Only importable with the ed25519 extra; the real check runs in CI, where
+# the extra is installed.
+[[tool.mypy.overrides]]
+module = ["cryptography.*"]
+ignore_missing_imports = true
