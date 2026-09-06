@@ -17,7 +17,7 @@ from init_data_py.validation import (
     validate_by_signature,
 )
 
-__version__ = "1.0.0rc1"
+__version__ = "1.0.0"
 
 __all__ = [
     "Chat",

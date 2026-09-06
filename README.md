@@ -62,6 +62,8 @@ Init data expires after one day by default. Pass `expires_in` to change it, or
 forever, so prefer a short lifetime.
 
 ```python
+from datetime import timedelta
+
 validate_by_hash(query_string, bot_token, expires_in=3600)
 validate_by_hash(query_string, bot_token, expires_in=timedelta(hours=1))
 validate_by_hash(query_string, bot_token, expires_in=0)  # no expiry check
@@ -105,7 +107,9 @@ init_data = validate_by_signature(query_string, bot_id, environment="test")
 
 `is_valid_by_signature` is the boolean form. If the extra is not installed,
 both raise `MissingDependencyError` rather than reporting a bad signature, so a
-packaging mistake can never be mistaken for a forged request.
+packaging mistake can never be mistaken for a forged request. Use
+`is_ed25519_available()` to check for the extra at startup instead of finding
+out on the first request. The keys themselves are in `TELEGRAM_PUBLIC_KEYS`.
 
 ## Parsing without validating
 
@@ -116,7 +120,8 @@ came from, so do not trust anything it returns until a validator has passed.
 from init_data_py import parse
 
 init_data = parse(query_string)
-init_data.user.id
+init_data.user  # a User, or None
+init_data.chat  # a Chat, or None
 init_data.issued_at  # timezone aware UTC datetime
 init_data.to_query_string()  # exactly the string that was parsed
 ```

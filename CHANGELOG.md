@@ -3,15 +3,9 @@
 All notable changes to this project are documented here. This project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - unreleased
+## [1.0.0] - 2026-09-06
 
 A rewrite. See the migration table in the README for the old to new mapping.
-
-Currently available as a release candidate:
-
-```bash
-pip install "init-data-py==1.0.0rc1"
-```
 
 ### Fixed
 
