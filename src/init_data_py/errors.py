@@ -36,9 +36,9 @@ class InitDataError(Exception):
 class InvalidInitDataError(InitDataError):
     """Base class for failures caused by untrusted input.
 
-    ``is_valid()`` and ``is_valid_third_party()`` return ``False`` for
-    exactly this subtree. Every other exception propagates, so a bug or a
-    missing dependency can never be mistaken for a failed check.
+    ``is_valid_by_hash()`` and ``is_valid_by_signature()`` return ``False``
+    for exactly this subtree. Every other exception propagates, so a bug or
+    a missing dependency can never be mistaken for a failed check.
     """
 
 
