@@ -3,6 +3,12 @@
 All notable changes to this project are documented here. This project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Support for Python 3.15.
+
 ## [1.0.0] - 2026-09-06
 
 A rewrite. See the migration table in the README for the old to new mapping.
